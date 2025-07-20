@@ -1,4 +1,3 @@
-// AlertItem.tsx
 "use client";
 
 import { FC } from "react";

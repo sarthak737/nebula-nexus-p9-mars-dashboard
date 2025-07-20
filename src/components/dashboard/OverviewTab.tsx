@@ -25,7 +25,6 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -114,7 +113,6 @@ const OverviewTab = () => {
           setWeatherData(solData as SolWeather);
         }
 
-        // Prepare multi-sol data for graphing — last 5 sols if available
         const solsToShow = data.sol_keys.slice(-5);
         const chartData = solsToShow.map((sol) => {
           const d = data[sol] as SolWeather;
@@ -144,7 +142,6 @@ const OverviewTab = () => {
     );
   }
 
-  // Chart.js data and options for Temperature
   const temperatureData = {
     labels: multiSolData.map((d) => `Sol ${d.sol}`),
     datasets: [
@@ -152,8 +149,8 @@ const OverviewTab = () => {
         label: "Max Temperature (°C)",
         data: multiSolData.map((d) => d.temperature),
         fill: true,
-        backgroundColor: "rgba(239, 68, 68, 0.2)", // red transparent
-        borderColor: "rgba(239, 68, 68, 1)", // red solid
+        backgroundColor: "rgba(239, 68, 68, 0.2)",
+        borderColor: "rgba(239, 68, 68, 1)",
         tension: 0.3, // smooth curves
         pointRadius: 4,
       },
@@ -180,7 +177,6 @@ const OverviewTab = () => {
     },
   };
 
-  // Chart.js data and options for Wind & Pressure
   const windPressureData = {
     labels: multiSolData.map((d) => `Sol ${d.sol}`),
     datasets: [
@@ -188,7 +184,7 @@ const OverviewTab = () => {
         label: "Wind Speed (m/s)",
         data: multiSolData.map((d) => d.windSpeed),
         fill: false,
-        borderColor: "rgba(59, 130, 246, 1)", // blue
+        borderColor: "rgba(59, 130, 246, 1)",
         backgroundColor: "rgba(59, 130, 246, 0.5)",
         tension: 0.3,
         pointRadius: 4,
@@ -198,7 +194,7 @@ const OverviewTab = () => {
         label: "Pressure (mbar)",
         data: multiSolData.map((d) => d.pressure),
         fill: false,
-        borderColor: "rgba(16, 185, 129, 1)", // green
+        borderColor: "rgba(16, 185, 129, 1)",
         backgroundColor: "rgba(16, 185, 129, 0.5)",
         tension: 0.3,
         pointRadius: 4,
@@ -290,7 +286,6 @@ const OverviewTab = () => {
         </div>
       </div>
 
-      {/* Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatusCard
           title="Max Temp"
@@ -322,9 +317,7 @@ const OverviewTab = () => {
         />
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Temperature Chart */}
         <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Thermometer className="w-5 h-5 text-red-400" />
@@ -333,7 +326,6 @@ const OverviewTab = () => {
           <Line data={temperatureData} options={temperatureOptions} />
         </div>
 
-        {/* Wind and Pressure Chart */}
         <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Wind className="w-5 h-5 text-blue-400" />
@@ -343,7 +335,6 @@ const OverviewTab = () => {
         </div>
       </div>
 
-      {/* Alerts */}
       <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
         <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-yellow-400" />

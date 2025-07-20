@@ -14,7 +14,6 @@ const MarsMissionDashboard = () => {
     "overview" | "weather" | "systems"
   >("overview");
 
-  // New: mouse position for dynamic background
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
@@ -44,7 +43,7 @@ const MarsMissionDashboard = () => {
   }) => (
     <button
       onClick={() => setCurrentTab(id)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 text-sm sm:text-base
+      className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 text-sm sm:text-base
         ${
           currentTab === id
             ? "bg-red-600 text-white shadow-md shadow-red-600/30"

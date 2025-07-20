@@ -169,7 +169,6 @@ const WeatherTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Main Info Cards */}
       <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 text-white shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Mars Weather Station</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -223,35 +222,35 @@ const WeatherTab = () => {
           }}
         />
       </div>
-
-      {/* Chart Panels */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Doughnut Pressure */}
-        <div className="bg-slate-900/50 p-6 rounded-xl shadow-md">
-          <h3 className="text-white text-lg font-bold mb-4">
-            Atmospheric Pressure
-          </h3>
-          <Doughnut
-            data={doughnutData}
-            options={{
-              cutout: "70%",
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: (tooltipItem) =>
-                      `${tooltipItem.dataset.data?.[0] ?? "--"} mbar`,
+      ``
+      <div className="bg-slate-900/50 p-6 rounded-xl shadow-md">
+        <h3 className="text-white text-lg font-bold mb-4">
+          Atmospheric Pressure
+        </h3>
+        <div className="flex flex-col items-center justify-center">
+          <div className="relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80">
+            <Doughnut
+              data={doughnutData}
+              options={{
+                cutout: "70%",
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: (tooltipItem) =>
+                        `${tooltipItem.dataset.data?.[0] ?? "--"} mbar`,
+                    },
                   },
                 },
-              },
-            }}
-          />
-          <div className="text-center mt-4 text-white text-lg font-semibold">
-            {pressure} mbar
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white text-xl md:text-2xl font-semibold">
+                {pressure} mbar
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* Line Chart */}
       </div>
     </div>
   );

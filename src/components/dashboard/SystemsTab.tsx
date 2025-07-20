@@ -75,7 +75,6 @@ const SystemsTab = () => {
   );
 
   useEffect(() => {
-    // Smooth fake data with slight downward trend
     const smoothTelemetry = Array.from({ length: 10 }, (_, i) => ({
       time: `${i + 1}h`,
       battery: Math.max(0, batteryLevel - i * 1.2 + Math.random() * 2),
@@ -207,11 +206,11 @@ const SystemsTab = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md flex flex-col justify-center items-center">
         <h3 className="text-white text-lg font-bold mb-4">
           Battery Level History
         </h3>
-        <div className="h-64">
+        <div className="w-full h-72 sm:h-80 md:h-96">
           <Line
             data={{
               labels: telemetryData.map((d) => d.time),
@@ -228,12 +227,19 @@ const SystemsTab = () => {
             }}
             options={{
               responsive: true,
+              maintainAspectRatio: false,
               plugins: {
                 legend: { labels: { color: "#fff" } },
               },
               scales: {
-                x: { ticks: { color: "#9ca3af" }, grid: { color: "#334155" } },
-                y: { ticks: { color: "#9ca3af" }, grid: { color: "#334155" } },
+                x: {
+                  ticks: { color: "#9ca3af" },
+                  grid: { color: "#334155" },
+                },
+                y: {
+                  ticks: { color: "#9ca3af" },
+                  grid: { color: "#334155" },
+                },
               },
             }}
           />
