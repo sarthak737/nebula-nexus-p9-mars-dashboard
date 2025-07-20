@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-import CTASection from "@/components/Landing/CTASection";
-import ToolsSection from "@/components/Landing/ToolsSection";
-import Metrics from "@/components/Landing/Metrics";
-import LiveData from "@/components/Landing/LiveData";
-import Hero from "@/components/Landing/Hero";
-import Header from "@/components/Landing/Header";
+import CTASection from "@/components/landing/CTASection";
+import ToolsSection from "@/components/landing/ToolsSection";
+import Metrics from "@/components/landing/Metrics";
+import LiveData from "@/components/landing/LiveData";
+import Hero from "@/components/landing/Hero";
+import Header from "@/components/landing/Header";
 
 const MarsLandingPage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
