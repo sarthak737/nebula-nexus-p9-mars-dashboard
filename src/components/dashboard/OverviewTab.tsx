@@ -10,18 +10,31 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  LineChart,
-  Line,
-} from "recharts";
 import StatusCard from "@/components/dashboard/StatusCard";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip as ChartTooltip,
+  Legend,
+  Filler,
+  ChartOptions,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ChartTooltip,
+  Legend,
+  Filler
+);
 
 interface SolWeather {
   PRE?: { av?: number };
@@ -37,6 +50,14 @@ interface WeatherAPIResponse {
 
 const OverviewTab = () => {
   const [weatherData, setWeatherData] = useState<SolWeather | null>(null);
+  const [multiSolData, setMultiSolData] = useState<
+    {
+      sol: string;
+      temperature: number;
+      pressure: number;
+      windSpeed: number;
+    }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   const systemAlerts: Alert[] = [
@@ -92,6 +113,19 @@ const OverviewTab = () => {
         ) {
           setWeatherData(solData as SolWeather);
         }
+
+        // Prepare multi-sol data for graphing — last 5 sols if available
+        const solsToShow = data.sol_keys.slice(-5);
+        const chartData = solsToShow.map((sol) => {
+          const d = data[sol] as SolWeather;
+          return {
+            sol,
+            temperature: d.AT?.mx ?? -60,
+            pressure: d.PRE?.av ?? 7.1,
+            windSpeed: d.HWS?.av ?? 10,
+          };
+        });
+        setMultiSolData(chartData);
       } catch (error) {
         console.error("Failed to fetch weather:", error);
       } finally {
@@ -102,35 +136,6 @@ const OverviewTab = () => {
     fetchData();
   }, []);
 
-  const telemetryData = weatherData
-    ? [
-        {
-          time: "00:00",
-          temperature: (weatherData.AT?.mx ?? -60) - 25,
-          pressure: (weatherData.PRE?.av ?? 7.1) - 0.4,
-          windSpeed: (weatherData.HWS?.av ?? 10) - 4,
-        },
-        {
-          time: "06:00",
-          temperature: (weatherData.AT?.mx ?? -60) - 15,
-          pressure: (weatherData.PRE?.av ?? 7.1) - 0.2,
-          windSpeed: (weatherData.HWS?.av ?? 10) - 2,
-        },
-        {
-          time: "12:00",
-          temperature: weatherData.AT?.mx ?? -60,
-          pressure: weatherData.PRE?.av ?? 7.1,
-          windSpeed: weatherData.HWS?.av ?? 10,
-        },
-        {
-          time: "18:00",
-          temperature: (weatherData.AT?.mx ?? -60) - 10,
-          pressure: (weatherData.PRE?.av ?? 7.1) + 0.2,
-          windSpeed: (weatherData.HWS?.av ?? 10) + 2,
-        },
-      ]
-    : [];
-
   if (loading || !weatherData) {
     return (
       <div className="flex justify-center items-center h-80">
@@ -139,10 +144,116 @@ const OverviewTab = () => {
     );
   }
 
+  // Chart.js data and options for Temperature
+  const temperatureData = {
+    labels: multiSolData.map((d) => `Sol ${d.sol}`),
+    datasets: [
+      {
+        label: "Max Temperature (°C)",
+        data: multiSolData.map((d) => d.temperature),
+        fill: true,
+        backgroundColor: "rgba(239, 68, 68, 0.2)", // red transparent
+        borderColor: "rgba(239, 68, 68, 1)", // red solid
+        tension: 0.3, // smooth curves
+        pointRadius: 4,
+      },
+    ],
+  };
+
+  const temperatureOptions: ChartOptions<"line"> = {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: "#f87171" } },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+      },
+    },
+    scales: {
+      x: { ticks: { color: "#9ca3af" } },
+      y: {
+        ticks: { color: "#9ca3af" },
+        beginAtZero: false,
+        suggestedMin: Math.min(...multiSolData.map((d) => d.temperature)) - 10,
+        suggestedMax: Math.max(...multiSolData.map((d) => d.temperature)) + 10,
+      },
+    },
+  };
+
+  // Chart.js data and options for Wind & Pressure
+  const windPressureData = {
+    labels: multiSolData.map((d) => `Sol ${d.sol}`),
+    datasets: [
+      {
+        label: "Wind Speed (m/s)",
+        data: multiSolData.map((d) => d.windSpeed),
+        fill: false,
+        borderColor: "rgba(59, 130, 246, 1)", // blue
+        backgroundColor: "rgba(59, 130, 246, 0.5)",
+        tension: 0.3,
+        pointRadius: 4,
+        yAxisID: "y1",
+      },
+      {
+        label: "Pressure (mbar)",
+        data: multiSolData.map((d) => d.pressure),
+        fill: false,
+        borderColor: "rgba(16, 185, 129, 1)", // green
+        backgroundColor: "rgba(16, 185, 129, 0.5)",
+        tension: 0.3,
+        pointRadius: 4,
+        yAxisID: "y",
+      },
+    ],
+  };
+
+  const windPressureOptions: ChartOptions<"line"> = {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: "#6ee7b7" } },
+      tooltip: {
+        mode: "index", // <- Now correctly typed
+        intersect: false,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: "#9ca3af" },
+      },
+      y: {
+        type: "linear",
+        display: true,
+        position: "left",
+        ticks: { color: "#34d399" },
+        beginAtZero: false,
+        suggestedMin: Math.min(...multiSolData.map((d) => d.pressure)) - 2,
+        suggestedMax: Math.max(...multiSolData.map((d) => d.pressure)) + 2,
+        title: {
+          display: true,
+          text: "Pressure (mbar)",
+          color: "#34d399",
+        },
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        position: "right",
+        ticks: { color: "#3b82f6" },
+        beginAtZero: true,
+        suggestedMax: Math.max(...multiSolData.map((d) => d.windSpeed)) + 5,
+        grid: { drawOnChartArea: false },
+        title: {
+          display: true,
+          text: "Wind Speed (m/s)",
+          color: "#3b82f6",
+        },
+      },
+    },
+  };
+
   return (
     <div className="space-y-8">
-      {/* Header Card */}
-      <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 rounded-xl p-6 text-white relative overflow-hidden shadow-lg">
+      <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 text-white relative overflow-hidden shadow-lg">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10" />
         <div className="relative z-10">
@@ -217,73 +328,18 @@ const OverviewTab = () => {
         <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Thermometer className="w-5 h-5 text-red-400" />
-            Temperature Trend (24h)
+            Temperature Trend (Last 5 Sols)
           </h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={telemetryData}>
-              <defs>
-                <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="time" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "8px",
-                  color: "#fff",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="temperature"
-                stroke="#ef4444"
-                fill="url(#tempGradient)"
-                strokeWidth={2}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Line data={temperatureData} options={temperatureOptions} />
         </div>
 
         {/* Wind and Pressure Chart */}
         <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Wind className="w-5 h-5 text-blue-400" />
-            Wind & Pressure
+            Wind & Pressure (Last 5 Sols)
           </h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={telemetryData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="time" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "8px",
-                  color: "#fff",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="windSpeed"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="pressure"
-                stroke="#10b981"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <Line data={windPressureData} options={windPressureOptions} />
         </div>
       </div>
 

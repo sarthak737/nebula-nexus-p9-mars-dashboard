@@ -1,4 +1,7 @@
+"use client";
+
 import { Globe, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const Header = () => {
   return (
@@ -21,10 +24,12 @@ const Header = () => {
           </div>
         </div>
 
-        <button className="cursor-pointer bg-white/10 text-white backdrop-blur-md border border-white/20 px-3 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/20 transition-all duration-300 flex items-center space-x-2">
-          <span className="text-xs sm:text-sm">Launch Dashboard</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <Link href="/dashboard">
+          <button className="cursor-pointer bg-white/10 text-white backdrop-blur-md border border-white/20 px-3 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/20 transition-all duration-300 flex items-center space-x-2">
+            <span className="text-xs sm:text-sm">Launch Dashboard</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </Link>
       </div>
     </nav>
   );

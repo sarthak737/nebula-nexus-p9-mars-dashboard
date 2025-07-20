@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Satellite, CloudRain, Globe, Rocket } from "lucide-react";
+import Link from "next/link";
+import { Satellite, CloudRain, Globe, Rocket, Home } from "lucide-react";
 
 import OverviewTab from "@/components/dashboard/OverviewTab";
 import WeatherTab from "@/components/dashboard/WeatherTab";
@@ -13,9 +14,23 @@ const MarsMissionDashboard = () => {
     "overview" | "weather" | "systems"
   >("overview");
 
+  // New: mouse position for dynamic background
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const TabButton = ({
@@ -55,27 +70,60 @@ const MarsMissionDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-red-600/10 rounded-full blur-3xl animate-pulse" />
+    <div className="relative min-h-screen text-white overflow-x-hidden">
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0a16] via-[#2b0a1a] to-[#09090b]" />
+
         <div
-          className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
+          className="absolute w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-[#ff6b35]/30 rounded-full blur-3xl transition-all duration-1000"
+          style={{
+            left: `${mousePosition.x * 0.4}%`,
+            top: `${mousePosition.y * 0.4}%`,
+            transform: "translate(-50%, -50%)",
+          }}
         />
         <div
-          className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "4s" }}
+          className="absolute w-[40vw] h-[40vw] max-w-[300px] max-h-[300px] bg-[#f97316]/25 rounded-full blur-3xl transition-all duration-1500"
+          style={{
+            right: `${mousePosition.x * 0.3}%`,
+            bottom: `${mousePosition.y * 0.3}%`,
+            transform: "translate(50%, 50%)",
+          }}
         />
+
+        {[...Array(100)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-[1.5px] h-[1.5px] bg-white/20 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+            }}
+          />
+        ))}
+
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff0d_1px,transparent_1px)] [background-size:25px_25px] opacity-10" />
       </div>
 
       <div className="relative z-10">
-        <header className="border-b border-slate-700/40 backdrop-blur-sm bg-slate-900/30">
+        <header className="backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
+                <Link
+                  href="/"
+                  className="p-3 rounded-md bg-slate-800 hover:bg-slate-700 transition-colors"
+                  aria-label="Home"
+                >
+                  <Home className="w-6 h-6 text-white" />
+                </Link>
+
                 <div className="w-12 h-12 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg flex items-center justify-center">
                   <Rocket className="w-6 h-6 text-white" />
                 </div>
+
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold text-white">
                     Mars Mission Control
@@ -107,7 +155,7 @@ const MarsMissionDashboard = () => {
           </div>
         </header>
 
-        <nav className="border-b border-slate-700/40 backdrop-blur-sm bg-slate-900/30">
+        <nav className="backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex flex-wrap gap-2 py-4">
               <TabButton id="overview" label="Overview" icon={Globe} />

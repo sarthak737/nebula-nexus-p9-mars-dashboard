@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Rocket, Satellite, Activity, Play } from "lucide-react";
+import { Rocket, Satellite, Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const Hero = () => {
   const [sol, setSol] = useState<number | null>(null);
@@ -57,21 +58,15 @@ const Hero = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="cursor-pointer group bg-gradient-to-r from-orange-500 to-red-600 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-white hover:shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 flex items-center justify-center space-x-2 text-sm sm:text-base"
-            >
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
-              <span>View Live Dashboard</span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="cursor-pointer bg-white/10 text-white backdrop-blur-md border border-white/20 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold hover:bg-white/20 transition-all duration-300 flex items-center justify-center space-x-2 text-sm sm:text-base"
-            >
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Explore Data</span>
-            </motion.button>
+            <Link href="/dashboard">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="cursor-pointer group bg-gradient-to-r from-orange-500 to-red-600 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-white hover:shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 flex items-center justify-center space-x-2 text-sm sm:text-base"
+              >
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Explore Data</span>
+              </motion.button>
+            </Link>
           </div>
         </motion.div>
 

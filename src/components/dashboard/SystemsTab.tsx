@@ -1,14 +1,28 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Battery, Signal } from "lucide-react";
+import { Battery, Signal, Loader2 } from "lucide-react";
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
-} from "recharts";
+  Filler,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler
+);
 
 interface PressureData {
   av?: number;
@@ -27,6 +41,9 @@ interface WeatherData {
 const SystemsTab = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [telemetryData, setTelemetryData] = useState<
+    { time: string; battery: number }[]
+  >([]);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -47,14 +64,6 @@ const SystemsTab = () => {
     fetchWeatherData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-blue-500"></div>
-      </div>
-    );
-  }
-
   const batteryLevel = Math.max(
     40,
     Math.min(100, 100 - (weatherData?.PRE?.av ?? 700) / 10)
@@ -65,6 +74,23 @@ const SystemsTab = () => {
     100 - (weatherData?.HWS?.av ?? 10) * 3
   );
 
+  useEffect(() => {
+    // Smooth fake data with slight downward trend
+    const smoothTelemetry = Array.from({ length: 10 }, (_, i) => ({
+      time: `${i + 1}h`,
+      battery: Math.max(0, batteryLevel - i * 1.2 + Math.random() * 2),
+    }));
+    setTelemetryData(smoothTelemetry);
+  }, [batteryLevel]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-80">
+        <Loader2 className="h-10 w-10 animate-spin text-white" />
+      </div>
+    );
+  }
+
   const systemData = [
     { name: "Power", value: batteryLevel, color: "#10b981" },
     { name: "Communication", value: communicationStrength, color: "#3b82f6" },
@@ -72,14 +98,9 @@ const SystemsTab = () => {
     { name: "Instruments", value: 96, color: "#8b5cf6" },
   ];
 
-  const telemetryData = Array.from({ length: 10 }, (_, i) => ({
-    time: `${i + 1}h`,
-    battery: Math.floor(batteryLevel - Math.random() * 10),
-  }));
-
   return (
     <div className="space-y-6">
-      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
         <h3 className="text-white text-lg font-bold mb-6">
           System Health Overview
         </h3>
@@ -123,7 +144,7 @@ const SystemsTab = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Battery className="w-5 h-5 text-green-400" />
             Power Management
@@ -158,7 +179,7 @@ const SystemsTab = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
             <Signal className="w-5 h-5 text-blue-400" />
             Communication Status
@@ -186,38 +207,37 @@ const SystemsTab = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+      <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-md">
         <h3 className="text-white text-lg font-bold mb-4">
           Battery Level History
         </h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <AreaChart data={telemetryData}>
-            <defs>
-              <linearGradient id="batteryGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="time" stroke="#9ca3af" />
-            <YAxis stroke="#9ca3af" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#1e293b",
-                border: "1px solid #475569",
-                borderRadius: "8px",
-                color: "#fff",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="battery"
-              stroke="#10b981"
-              fill="url(#batteryGradient)"
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <div className="h-64">
+          <Line
+            data={{
+              labels: telemetryData.map((d) => d.time),
+              datasets: [
+                {
+                  label: "Battery Level",
+                  data: telemetryData.map((d) => d.battery),
+                  fill: true,
+                  backgroundColor: "rgba(16, 185, 129, 0.2)",
+                  borderColor: "#10b981",
+                  tension: 0.3,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { labels: { color: "#fff" } },
+              },
+              scales: {
+                x: { ticks: { color: "#9ca3af" }, grid: { color: "#334155" } },
+                y: { ticks: { color: "#9ca3af" }, grid: { color: "#334155" } },
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );
